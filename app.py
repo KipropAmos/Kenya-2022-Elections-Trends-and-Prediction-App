@@ -59,11 +59,11 @@ def set_bg(png_file):
 
 # Loading dataframe
 
-d1 = pd.read_csv('elections_0_row_70688_8ea4064a-336a-4f7c-8bb7-8a338853fac0.csv')
-d2 = pd.read_csv('elections_1_row_70688_fd547fb2-cf0d-426c-8f5a-179f83f19761.csv')
-d3 = pd.read_csv('elections_2_row_70688_dda5e494-f8e8-4070-91fa-66c70d745159.csv')
-d4 = pd.read_csv('elections_3_row_70688_258880b6-82f7-4bec-a331-c78b516ecaf1.csv')
-d5 = pd.read_csv('elections_4_row_70688_05e3f56e-f5b4-4aea-916f-ac508060ed3c.csv')
+d1 = pd.read_csv('df1.csv')
+d2 = pd.read_csv('df2.csv')
+d3 = pd.read_csv('df3.csv')
+d4 = pd.read_csv('df4.csv')
+d5 = pd.read_csv('df5.csv')
 
 # Define dataframes
 frames = [d1, d2, d3, d4, d5]
