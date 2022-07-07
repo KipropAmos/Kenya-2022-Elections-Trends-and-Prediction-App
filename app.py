@@ -90,10 +90,6 @@ if navigation == "Home":
     **_At indispensable, we care about Political current affairs in Kenya.
         We Also provide you with updates on twitter popularity of the Presidential Candidates in the upcoming elections._** 
     """)    
-
-if st.button("Is blocked?"):
-  st.write("No, you can still interact")
-  st.balloons()
     
 if navigation == "Politics Today":
     st.write("""
