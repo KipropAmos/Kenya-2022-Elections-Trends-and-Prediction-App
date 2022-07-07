@@ -59,11 +59,11 @@ def set_bg(png_file):
 
 # Loading dataframe
 
-d1 = pd.read_csv('df10.csv')
-d2 = pd.read_csv('df11.csv')
-d3 = pd.read_csv('df12.csv')
-d4 = pd.read_csv('df13.csv')
-d5 = pd.read_csv('df14.csv')
+d1 = pd.read_csv('df1.csv')
+d2 = pd.read_csv('df2.csv')
+d3 = pd.read_csv('df3.csv')
+d4 = pd.read_csv('df4.csv')
+d5 = pd.read_csv('df5.csv')
 
 # Define dataframes
 df = pd.concat([d1, d2, d3, d4, d5], axis=0, ignore_index=True)
