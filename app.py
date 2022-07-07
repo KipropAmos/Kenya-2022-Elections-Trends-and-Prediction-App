@@ -38,6 +38,7 @@ footer:after{
 
 st.markdown(hide_menu, unsafe_allow_html=True)
 
+
 @st.cache(allow_output_mutation=True)
 def get_base64(bin_file):
     with open(bin_file, 'rb') as f:
@@ -78,12 +79,10 @@ time = time.date()
 set_bg("Elect.png")
 
 with st.sidebar:
-    navigation = st.sidebar.selectbox("Main Menu", ["Home", "Politics Today", "Presidential Election Prediction"])
-        # icons=['house', 'activity', 'eye-fill'], menu_icon="menu-app", default_index=1)
-
+    navigation= option_menu(None, ["Home", "Politics Today", "Presidential Election Prediction"], 
+        icons=['house-fill', "book-half", "check-circle-fill"], default_index=1)
+  
 st.title("The Indispensables 2022 Election Analysis")
-
-
 
 
 if navigation == "Home":
@@ -92,8 +91,9 @@ if navigation == "Home":
         We Also provide you with updates on twitter popularity of the Presidential Candidates in the upcoming elections._** 
     """)    
 
-
-
+if st.button("Is blocked?"):
+  st.write("No, you can still interact")
+  st.balloons()
     
 if navigation == "Politics Today":
     st.write("""
@@ -121,8 +121,7 @@ if navigation == "Politics Today":
 
 
     if navigate2 == "Trending Topics":
-        st.subheader("Dates of interest")
-        st.sidebar.subheader("Dates of interest Analysis")
+        st.subheader("Dates of interest")        
         st.write("What dates do you want to get Trending topics in this election cycle?")
         start = st.date_input(label='Start: ', value=datetime.datetime(year=2022, month=5, day=20, hour=16, minute=30), key='#start', help="The start date time", on_change=lambda : None)
 
@@ -145,7 +144,7 @@ if navigation == "Politics Today":
             df1 = df.loc[mask]
 
             # st.subheader("Top trends on social media in the run up to the 2022 elections")
-            choice = st.sidebar.selectbox(label = "choose", options = ["Top trends on social media in the run up to the 2022 elections", 'Polarity of sentiments of the electorate heading towards the general election'])
+            choice = st.sidebar.radio(label = "Go To:", options = ["Top trends on social media in the run up to the 2022 elections", 'Polarity of sentiments of the electorate heading towards the general election'])
             
             if choice == "Top trends on social media in the run up to the 2022 elections":
                 st.subheader("Top trends on social media in the run up to the 2022 elections")
@@ -163,9 +162,7 @@ if navigation == "Politics Today":
                 bigram = pd.DataFrame(freq)
                 bigram.rename(columns = {0:'bigram', 1: 'count'}, inplace = True) 
 
-                # st.subheader("Top trends on social media in the run up to the 2022 elections")
-                st.sidebar.subheader("Top trends on social media in the run up to the 2022 elections")
-
+                
                 # Taking first 20 records
                 popular_words  = bigram.head(20)
                 popular_words['count'] = ((popular_words['count']/ popular_words['count'].sum()) * 100).round(2)
@@ -248,9 +245,7 @@ if navigation == "Politics Today":
         else:
             st.error('Error: End date must fall after start date.') 
 
-    if navigate2 == "Political Parties":
-
-        st.sidebar.subheader("Dates of interest")
+    if navigate2 == "Political Parties":        
         st.write("What dates do you want to get popularity of various political parties?")
         
         # start date
@@ -275,104 +270,104 @@ if navigation == "Politics Today":
             # Applying filter
             df1 = df.loc[mask]
 
-            # Selecting columns of interest, dropping unwanted records, and grouping like records in dataframe
-            words_coalitions = df1[['coalition']]
-            words_coalition = words_coalitions.groupby(['coalition'])['coalition'].count().reset_index(name='count')
-            words_coalition.drop(words_coalition.loc[words_coalition['coalition']== 'None'].index, inplace=True)
-            words_coalition['count'] = ((words_coalition['count']/ words_coalition['count'].sum()) * 100).round(2)
+            choice2 = st.sidebar.radio(label = "Go To:", options = ['Social Media Popularity of Political Figures heading towards the general election', 'Polarity of sentiments of the electorate heading towards the general election'])
+            if choice2 == 'Social Media Popularity of Political Parties heading towards the general election':
+
+                # Selecting columns of interest, dropping unwanted records, and grouping like records in dataframe
+                words_coalitions = df1[['coalition']]
+                words_coalition = words_coalitions.groupby(['coalition'])['coalition'].count().reset_index(name='count')
+                words_coalition.drop(words_coalition.loc[words_coalition['coalition']== 'None'].index, inplace=True)
+                words_coalition['count'] = ((words_coalition['count']/ words_coalition['count'].sum()) * 100).round(2)
 
 
-            # Names and counts
-            names = words_coalition['coalition'].to_list()
-            counts = words_coalition['count'].to_list()
+                # Names and counts
+                names = words_coalition['coalition'].to_list()
+                counts = words_coalition['count'].to_list()
+                
+                # Dataframe source
+                source = pd.DataFrame({
+                    'counts': counts,
+                    'names': names
+                    })
+
+                # Sorting 
+                source1 = source.sort_values(['counts'], ascending=[False])
+
+                # Plot
+                bar_chart = alt.Chart(source1).mark_bar().encode(
+                    y='counts',
+                    x='names',
+                    color = 'names',
+                    )
+
+                # Labels
+                text = bar_chart.mark_text(
+                    align='left',
+                    baseline='middle',
+                    dx=3  # Nudges text to right so it doesn't appear on top of the bar
+                    ).encode(text='counts')
             
-            # Dataframe source
-            source = pd.DataFrame({
-                'counts': counts,
-                'names': names
-                })
+                plt = (bar_chart + text).properties(height=600)
+                st.altair_chart(plt, use_container_width=True)
 
-            # Sorting 
-            source1 = source.sort_values(['counts'], ascending=[False])
-
-            # Plot
-            bar_chart = alt.Chart(source1).mark_bar().encode(
-                y='counts',
-                x='names',
-                color = 'names',
-                )
-
-            # Labels
-            text = bar_chart.mark_text(
-                align='left',
-                baseline='middle',
-                dx=3  # Nudges text to right so it doesn't appear on top of the bar
-                ).encode(text='counts')
-        
-            plt = (bar_chart + text).properties(height=600)
-            st.altair_chart(plt, use_container_width=True)
-
-
-            st.sidebar.subheader(' Polarity of sentiments of the electorate heading towards the general election')
-
-            st.write("""
-            The line chart represents the changes in polarity of the electorate as we head toward the 2022
-            election. Score of 1 represents very positive, -1 represents very negative, and 0 represents 
-            neautral sentiments
-            """)
+            if choice2 == 'Polarity of sentiments of the electorate heading towards the general election':
             
-            # Applying filter
-            df2 = df.loc[mask]
+                st.write("""
+                The line chart represents the changes in polarity of the electorate as we head toward the 2022
+                election. Score of 1 represents very positive, -1 represents very negative, and 0 represents 
+                neautral sentiments
+                """)
+                
+                # Applying filter
+                df2 = df.loc[mask]
 
-            # Seelecting necessary attributes
-            words_coalitions= df2[['coalition', 'time', 'Polarity']]
+                # Seelecting necessary attributes
+                words_coalitions= df2[['coalition', 'time', 'Polarity']]
 
-            # Applying filter 
-            words_coalition = words_coalitions.groupby(['time','coalition'], as_index=False, sort=False).agg({'Polarity': 'mean'})
-            words_coalition.drop(words_coalition.loc[words_coalition['coalition']== 'None'].index, inplace=True)
+                # Applying filter 
+                words_coalition = words_coalitions.groupby(['time','coalition'], as_index=False, sort=False).agg({'Polarity': 'mean'})
+                words_coalition.drop(words_coalition.loc[words_coalition['coalition']== 'None'].index, inplace=True)
 
-            # Getting lists of the varous attributes in word coalition dataframe
-            date1 = words_coalition['time'].to_list()
-            polaritys = words_coalition['Polarity'].to_list()
-            coalition = words_coalition['coalition'].to_list()
+                # Getting lists of the varous attributes in word coalition dataframe
+                date1 = words_coalition['time'].to_list()
+                polaritys = words_coalition['Polarity'].to_list()
+                coalition = words_coalition['coalition'].to_list()
 
-            # Source daatframe
-            source = pd.DataFrame({
-                'polaritys': polaritys,
-                'date': date1,
-                'symbol': coalition
-                })
+                # Source daatframe
+                source = pd.DataFrame({
+                    'polaritys': polaritys,
+                    'date': date1,
+                    'symbol': coalition
+                    })
 
-            # Line chart
-            line_chart = alt.Chart(source).mark_line().encode(
-                y='polaritys',
-                x='date',
-                color='symbol',
-                strokeDash='symbol',
-                )
+                # Line chart
+                line_chart = alt.Chart(source).mark_line().encode(
+                    y='polaritys',
+                    x='date',
+                    color='symbol',
+                    strokeDash='symbol',
+                    )
 
-            # Labelling
-            text = line_chart.mark_text(
-                align='left',
-                baseline='middle',
-                dx=3  # Nudges text to right so it doesn't appear on top of the bar
-                )
-        
-            # Plot
-            plt = (line_chart + text).properties(height=600)
-            st.altair_chart(plt, use_container_width=True)
+                # Labelling
+                text = line_chart.mark_text(
+                    align='left',
+                    baseline='middle',
+                    dx=3  # Nudges text to right so it doesn't appear on top of the bar
+                    )
+            
+                # Plot
+                plt = (line_chart + text).properties(height=600)
+                st.altair_chart(plt, use_container_width=True)
 
 
-        # Date else condition
+            # Date else condition
         else:
             st.error('Error: End date must fall after start date.')       
 
 
 
 
-    if navigate2 == "Political Figures":
-
-        st.sidebar.subheader("Dates of interest")
+    if navigate2 == "Political Figures":        
         st.write("What dates do you want to get popularity of various political figures?")
 
         # Start date
@@ -395,89 +390,92 @@ if navigation == "Politics Today":
             # Applying filter
             df1 = df.loc[mask]
 
-            # Selecting records, attributes of intrest and dropping unwanted attributes
-            words_presidents = df1[['presidential_aspirant']]
-            words_president = words_presidents.groupby(['presidential_aspirant'])['presidential_aspirant'].count().reset_index(name='count')
-            words_president.drop(words_president.loc[words_president['presidential_aspirant']== 'None'].index, inplace=True)
-            words_president['count'] = ((words_president['count']/ words_president['count'].sum()) * 100).round(2)
+            choice3 = st.sidebar.radio(label = "Go To:", options = ["'Social Media Popularity of Political Figures heading towards the general election'", "Polarity of sentiments towards various presidential aspirants for Kenyas 2022 general election"])
+            if choice3 == 'Social Media Popularity of Political Figures heading towards the general election':
 
-            # Names and counts
-            names = words_president['presidential_aspirant'].to_list()
-            counts = words_president['count'].to_list()
+                # Selecting records, attributes of intrest and dropping unwanted attributes
+                words_presidents = df1[['presidential_aspirant']]
+                words_president = words_presidents.groupby(['presidential_aspirant'])['presidential_aspirant'].count().reset_index(name='count')
+                words_president.drop(words_president.loc[words_president['presidential_aspirant']== 'None'].index, inplace=True)
+                words_president['count'] = ((words_president['count']/ words_president['count'].sum()) * 100).round(2)
 
-            # Source dataframe
-            source = pd.DataFrame({
-                'counts': counts,
-                'names': names
-                })
+                # Names and counts
+                names = words_president['presidential_aspirant'].to_list()
+                counts = words_president['count'].to_list()
 
-            # Sorting
-            source1 = source.sort_values(['counts'], ascending=[False])
+                # Source dataframe
+                source = pd.DataFrame({
+                    'counts': counts,
+                    'names': names
+                    })
 
-            # Bar chart
-            bar_chart = alt.Chart(source1).mark_bar().encode(
-                y='counts',
-                x='names',
-                color = 'names',
-                )
+                # Sorting
+                source1 = source.sort_values(['counts'], ascending=[False])
 
-            # labelling bar chart
-            text = bar_chart.mark_text(
-                align='left',
-                baseline='middle',
-                dx=3  # Nudges text to right so it doesn't appear on top of the bar
-                ).encode(text='counts')
+                # Bar chart
+                bar_chart = alt.Chart(source1).mark_bar().encode(
+                    y='counts',
+                    x='names',
+                    color = 'names',
+                    )
 
-            # Plotting bar chart
-            plt = (bar_chart + text).properties(height=600)
-            st.altair_chart(plt, use_container_width=True)
+                # labelling bar chart
+                text = bar_chart.mark_text(
+                    align='left',
+                    baseline='middle',
+                    dx=3  # Nudges text to right so it doesn't appear on top of the bar
+                    ).encode(text='counts')
 
+                # Plotting bar chart
+                plt = (bar_chart + text).properties(height=600)
+                st.altair_chart(plt, use_container_width=True)
 
-            st.sidebar.subheader("Polarity of sentiments towards various presidential aspirants for Kenyas 2022 general election")
-            st.write("""
-            The line chart represents the changes in polarity of the electorate as we head toward the 2022
-            election. Score of 1 represents very positive, -1 represents very negative, and 0 represents 
-            neautral sentiments 
-            """)
-        
-            # Applying filter
-            df2 = df.loc[mask]
-
-            # selectring attributes of interest, dropping unwanted records, and grouping records based on time and presidential aspirnat
-            words_presidents = df2[['presidential_aspirant', 'time', 'Polarity']]
-            words_president = words_presidents.groupby(['time','presidential_aspirant'], as_index=False, sort=False).agg({'Polarity': 'mean'})
-            words_president.drop(words_president.loc[words_president['presidential_aspirant']== 'None'].index, inplace=True)
-
-            # Converting the date, polarity ans presidential aspirant attributes in dataframe to lists
-            date1 = words_president['time'].to_list()
-            polaritys = words_president['Polarity'].to_list()
-            aspirant = words_president['presidential_aspirant'].to_list()
-
-            # Source dataframe
-            source = pd.DataFrame({
-                'polaritys': polaritys,
-                'date': date1,
-                'symbol': aspirant
-                })
+            if choice3 == "Polarity of sentiments towards various presidential aspirants for Kenyas 2022 general election":
             
-            # Line chart
-            line_chart = alt.Chart(source).mark_line().encode(
-                y='polaritys',
-                x='date',
-                color='symbol',
-                strokeDash='symbol',
-                )
+                st.write("""
+                The line chart represents the changes in polarity of the electorate as we head toward the 2022
+                election. Score of 1 represents very positive, -1 represents very negative, and 0 represents 
+                neautral sentiments 
+                """)
             
-            # Labelling plot
-            text = line_chart.mark_text(
-                align='left',
-                baseline='middle',
-                dx=3  # Nudges text to right so it doesn't appear on top of the bar
-                )
+                # Applying filter
+                df2 = df.loc[mask]
 
-            # plotting
-            plt = (line_chart + text).properties(height=600)
-            st.altair_chart(plt, use_container_width=True)
+                # selectring attributes of interest, dropping unwanted records, and grouping records based on time and presidential aspirnat
+                words_presidents = df2[['presidential_aspirant', 'time', 'Polarity']]
+                words_president = words_presidents.groupby(['time','presidential_aspirant'], as_index=False, sort=False).agg({'Polarity': 'mean'})
+                words_president.drop(words_president.loc[words_president['presidential_aspirant']== 'None'].index, inplace=True)
+
+                # Converting the date, polarity ans presidential aspirant attributes in dataframe to lists
+                date1 = words_president['time'].to_list()
+                polaritys = words_president['Polarity'].to_list()
+                aspirant = words_president['presidential_aspirant'].to_list()
+
+                # Source dataframe
+                source = pd.DataFrame({
+                    'polaritys': polaritys,
+                    'date': date1,
+                    'symbol': aspirant
+                    })
+                
+                # Line chart
+                line_chart = alt.Chart(source).mark_line().encode(
+                    y='polaritys',
+                    x='date',
+                    color='symbol',
+                    strokeDash='symbol',
+                    )
+                
+                # Labelling plot
+                text = line_chart.mark_text(
+                    align='left',
+                    baseline='middle',
+                    dx=3  # Nudges text to right so it doesn't appear on top of the bar
+                    )
+
+                # plotting
+                plt = (line_chart + text).properties(height=600)
+                st.altair_chart(plt, use_container_width=True)
 
         else:
             st.error('Error: End date must fall after start date.')
@@ -509,8 +507,7 @@ if navigation == "Presidential Election Prediction":
         
         st.write("At indespensable we try to predict the presidential aspirant most likely to win the forthcoming August 9th, 2022 elections. This prediction is made using various sentiments obtained from social media regarding the general election. YOu can observe the changes in favour of the presidential aspirants for different periods leading towards the election")
         st.write("What dates do you want to get popularity of various political figures?")
-        st.sidebar.subheader("Dates of interest")
-
+        
         # start date
         start = st.date_input(label='Start: ', value=datetime.datetime(year=2022, month=5, day=20, hour=16, minute=30), key='#start', help="The start date time", on_change=lambda : None)
 
@@ -533,127 +530,132 @@ if navigation == "Presidential Election Prediction":
             # Applying filter
             df1 = df.loc[mask]
 
-            # Function to find percentage of positive and negative sentiments
-            def pol_percent(subset,total):
-                neg_percent = ((subset.groupby('Expressions').count())['Polarity'][0]/total)*100
-                pos_percent = ((subset.groupby('Expressions').count())['Polarity'][1]/total)*100
+            choice4 = st.sidebar.radio(label = "Go To:", options = ['Prediction factoring in undecided voters', 'Prediction without undecided voters'])
+            if choice4 == 'Prediction factoring in undecided voters':
 
-                return neg_percent,pos_percent
+                # Function to find percentage of positive and negative sentiments
+                def pol_percent(subset,total):
+                    neg_percent = ((subset.groupby('Expressions').count())['Polarity'][0]/total)*100
+                    pos_percent = ((subset.groupby('Expressions').count())['Polarity'][1]/total)*100
 
-            # Dropping records without mentions of any of the presidential aspirants
-            df1.drop(df1.loc[df1['presidential_aspirant']== 'None'].index, inplace=True)
+                    return neg_percent,pos_percent
 
-            # Getting total number neutral sentiments in the dataframe
-            neutral_total = len(df1[df1['Polarity']==0])/3
+                # Dropping records without mentions of any of the presidential aspirants
+                df1.drop(df1.loc[df1['presidential_aspirant']== 'None'].index, inplace=True)
 
-            # Selecting records from df1 with mentions of various presidential aspirants
-            df_ruto = df1 [df1 ['presidential_aspirant'] == 'Dr. William Samoei Ruto']
-            df_raila = df1 [df1 ['presidential_aspirant'] == 'Raila Amollo Odinga']
-            df_wajackoyah = df1 [df1 ['presidential_aspirant'] == 'Prof. George Luchiri Wajackoyah']
+                # Getting total number neutral sentiments in the dataframe
+                neutral_total = len(df1[df1['Polarity']==0])/3
 
-            # Dropping neutral records for the three presidnetial aspirants
-            df_ruto.drop((df_ruto[df_ruto['Polarity']==0]).index, inplace=True)
-            df_raila.drop((df_raila[df_raila['Polarity']==0]).index, inplace=True)
-            df_wajackoyah.drop((df_wajackoyah[df_wajackoyah['Polarity']==0]).index, inplace=True)
+                # Selecting records from df1 with mentions of various presidential aspirants
+                df_ruto = df1 [df1 ['presidential_aspirant'] == 'Dr. William Samoei Ruto']
+                df_raila = df1 [df1 ['presidential_aspirant'] == 'Raila Amollo Odinga']
+                df_wajackoyah = df1 [df1 ['presidential_aspirant'] == 'Prof. George Luchiri Wajackoyah']
 
-            # Getting the total number of records where the three presidential aspirants have been mentioned
-            records_raila = len(df_raila)
-            records_ruto = len(df_ruto)
-            records_wajackoyah = len(df_wajackoyah)
+                # Dropping neutral records for the three presidnetial aspirants
+                df_ruto.drop((df_ruto[df_ruto['Polarity']==0]).index, inplace=True)
+                df_raila.drop((df_raila[df_raila['Polarity']==0]).index, inplace=True)
+                df_wajackoyah.drop((df_wajackoyah[df_wajackoyah['Polarity']==0]).index, inplace=True)
 
-            # Total records with presidential mentions
-            total_records = records_raila + records_ruto + records_wajackoyah + neutral_total
+                # Getting the total number of records where the three presidential aspirants have been mentioned
+                records_raila = len(df_raila)
+                records_ruto = len(df_ruto)
+                records_wajackoyah = len(df_wajackoyah)
 
-            # Finding percentage negative and positive sentiments per presidential aspirnat
-            ruto_total_percent = pol_percent(df_ruto,records_ruto)
-            raila_total_percent = pol_percent(df_raila,records_raila)
-            wajackoyah_total_percent = pol_percent(df_wajackoyah,records_wajackoyah)
+                # Total records with presidential mentions
+                total_records = records_raila + records_ruto + records_wajackoyah + neutral_total
 
-            # Finding the favour of presidential aspirants an undecded voters in electorate
-            ruto_pos = (ruto_total_percent[1] + (raila_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_ruto/total_records )
-            raila_pos =(raila_total_percent[1] + (ruto_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_raila/total_records )
-            wajackoyah_pos = (wajackoyah_total_percent[1] + (ruto_total_percent[0] + raila_total_percent[0])/2) * (records_wajackoyah/total_records)
-            undecided_pos_percent = neutral_total/total_records * 100
+                # Finding percentage negative and positive sentiments per presidential aspirnat
+                ruto_total_percent = pol_percent(df_ruto,records_ruto)
+                raila_total_percent = pol_percent(df_raila,records_raila)
+                wajackoyah_total_percent = pol_percent(df_wajackoyah,records_wajackoyah)
 
-            # Lists of percentage polling of aspirants and undecided voters together with attached labels
-            counts = [ruto_pos, raila_pos, wajackoyah_pos, undecided_pos_percent]
-            names =  ['ruto\'s Favour' ,'raila\'s Favour','wajackoyah\'s Favour', 'Undecided Voters']
+                # Finding the favour of presidential aspirants an undecded voters in electorate
+                ruto_pos = (ruto_total_percent[1] + (raila_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_ruto/total_records )
+                raila_pos =(raila_total_percent[1] + (ruto_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_raila/total_records )
+                wajackoyah_pos = (wajackoyah_total_percent[1] + (ruto_total_percent[0] + raila_total_percent[0])/2) * (records_wajackoyah/total_records)
+                undecided_pos_percent = neutral_total/total_records * 100
 
-            # Source dataframe
-            source = pd.DataFrame({
-                'counts': counts,
-                'names': names
-                })
+                # Lists of percentage polling of aspirants and undecided voters together with attached labels
+                counts = [ruto_pos, raila_pos, wajackoyah_pos, undecided_pos_percent]
+                names =  ['ruto\'s Favour' ,'raila\'s Favour','wajackoyah\'s Favour', 'Undecided Voters']
+
+                # Source dataframe
+                source = pd.DataFrame({
+                    'counts': counts,
+                    'names': names
+                    })
+                
+                # Sorting the counts in ascending order
+                source1 = source.sort_values(['counts'], ascending=[False])
+
+                # Bar chart
+                bar_chart = alt.Chart(source1).mark_bar().encode(
+                    y='counts',
+                    x='names',
+                    color = 'names'
+                    )
+                
+                # labels for bar chart
+                text = bar_chart.mark_text(
+                    align='left',
+                    baseline='middle',
+                    dx=3  # Nudges text to right so it doesn't appear on top of the bar
+                    ).encode(text='counts')
+                
+                # Plot
+                plt = (bar_chart + text).properties(height=600)
+                st.altair_chart(plt, use_container_width=True)
+
+            if choice4 == 'Prediction without undecided voters':
+
             
-            # Sorting the counts in ascending order
-            source1 = source.sort_values(['counts'], ascending=[False])
+                # Prediction without factoring in lack of undecided voters
+                st.subheader('Presidential prediction without factoring in undecided voters')
+                st.write("Here we try to predict  the presidential race assuming all the social media who had neutral sentiments did not participate in the forthcoming elections due to voter apathy")
+                
+                # Total without undecided voters
+                total = records_raila + records_ruto + records_wajackoyah 
 
-            # Bar chart
-            bar_chart = alt.Chart(source1).mark_bar().encode(
-                y='counts',
-                x='names',
-                color = 'names'
-                )
-            
-            # labels for bar chart
-            text = bar_chart.mark_text(
-                align='left',
-                baseline='middle',
-                dx=3  # Nudges text to right so it doesn't appear on top of the bar
-                ).encode(text='counts')
-            
-            # Plot
-            plt = (bar_chart + text).properties(height=600)
-            st.altair_chart(plt, use_container_width=True)
+                # Finding percentage negative and positive sentiments per presidential aspirnat
+                ruto_total_percent = pol_percent(df_ruto,records_ruto)
+                raila_total_percent = pol_percent(df_raila,records_raila)
+                wajackoyah_total_percent = pol_percent(df_wajackoyah,records_wajackoyah)
 
-            
-            # Prediction without factoring in lack of undecided voters
-            st.subheader('Presidential prediction without factoring in undecided voters')
-            st.write("Here we try to predict  the presidential race assuming all the social media who had neutral sentiments did not participate in the forthcoming elections due to voter apathy")
-            
-            # Total without undecided voters
-            total = records_raila + records_ruto + records_wajackoyah 
+                # Finding the favour of presidential aspirants an undecded voters in electorate
+                ruto_pos = (ruto_total_percent[1] + (raila_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_ruto/total)
+                raila_pos =(raila_total_percent[1] + (ruto_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_raila/total)
+                wajackoyah_pos = (wajackoyah_total_percent[1] + (ruto_total_percent[0] + raila_total_percent[0])/2) * (records_wajackoyah/total)
 
-            # Finding percentage negative and positive sentiments per presidential aspirnat
-            ruto_total_percent = pol_percent(df_ruto,records_ruto)
-            raila_total_percent = pol_percent(df_raila,records_raila)
-            wajackoyah_total_percent = pol_percent(df_wajackoyah,records_wajackoyah)
+                # Lists of percentage polling of aspirants and undecided voters together with attached labels
+                counts = [ruto_pos, raila_pos, wajackoyah_pos]
+                names =  ['ruto\'s Favour' ,'raila\'s Favour','wajackoyah\'s Favour']
 
-            # Finding the favour of presidential aspirants an undecded voters in electorate
-            ruto_pos = (ruto_total_percent[1] + (raila_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_ruto/total)
-            raila_pos =(raila_total_percent[1] + (ruto_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_raila/total)
-            wajackoyah_pos = (wajackoyah_total_percent[1] + (ruto_total_percent[0] + raila_total_percent[0])/2) * (records_wajackoyah/total)
+                # Source dataframe
+                source = pd.DataFrame({
+                    'counts': counts,
+                    'names': names
+                    })
+                
+                # Sorting the counts in ascending order
+                source1 = source.sort_values(['counts'], ascending=[False])
 
-            # Lists of percentage polling of aspirants and undecided voters together with attached labels
-            counts = [ruto_pos, raila_pos, wajackoyah_pos]
-            names =  ['ruto\'s Favour' ,'raila\'s Favour','wajackoyah\'s Favour']
-
-            # Source dataframe
-            source = pd.DataFrame({
-                'counts': counts,
-                'names': names
-                })
-            
-            # Sorting the counts in ascending order
-            source1 = source.sort_values(['counts'], ascending=[False])
-
-            # Bar chart
-            bar_chart = alt.Chart(source1).mark_bar().encode(
-                y='counts',
-                x='names',
-                color = 'names',
-                )
-            
-            # labels for bar chart
-            text = bar_chart.mark_text(
-                align='left',
-                baseline='middle',
-                dx=3  # Nudges text to right so it doesn't appear on top of the bar
-                ).encode(text='counts')
-            
-            # Plot
-            plt = (bar_chart + text).properties(height=600)
-            st.altair_chart(plt, use_container_width=True)
+                # Bar chart
+                bar_chart = alt.Chart(source1).mark_bar().encode(
+                    y='counts',
+                    x='names',
+                    color = 'names',
+                    )
+                
+                # labels for bar chart
+                text = bar_chart.mark_text(
+                    align='left',
+                    baseline='middle',
+                    dx=3  # Nudges text to right so it doesn't appear on top of the bar
+                    ).encode(text='counts')
+                
+                # Plot
+                plt = (bar_chart + text).properties(height=600)
+                st.altair_chart(plt, use_container_width=True)
 
 
         else:
