@@ -81,8 +81,6 @@ set_bg("Elect.png")
 with st.sidebar:
     navigation= option_menu(None, ["Home", "Politics Today", "Presidential Election Prediction"], 
         icons=['house-fill', "book-half", "check-circle-fill"], default_index=1)
-  
-st.title("The Indispensables 2022 Election Analysis")
 
 
 if navigation == "Home":
