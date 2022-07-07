@@ -525,138 +525,135 @@ if navigation == "Presidential Election Prediction":
 
             # Applying filter
             df1 = df.loc[mask]
+           
+            # Function to find percentage of positive and negative sentiments
+            def pol_percent(subset,total):
+                neg_percent = ((subset.groupby('Expressions').count())['Polarity'][0]/total)*100
+                pos_percent = ((subset.groupby('Expressions').count())['Polarity'][1]/total)*100
 
-            choice4 = st.sidebar.radio(label = "Go To:", options = ['Prediction factoring in undecided voters', 'Prediction without undecided voters'])
-            if choice4 == 'Prediction factoring in undecided voters':
+                return neg_percent,pos_percent
 
-                # Function to find percentage of positive and negative sentiments
-                def pol_percent(subset,total):
-                    neg_percent = ((subset.groupby('Expressions').count())['Polarity'][0]/total)*100
-                    pos_percent = ((subset.groupby('Expressions').count())['Polarity'][1]/total)*100
+            # Dropping records without mentions of any of the presidential aspirants
+            df1.drop(df1.loc[df1['presidential_aspirant']== 'None'].index, inplace=True)
 
-                    return neg_percent,pos_percent
+            # Getting total number neutral sentiments in the dataframe
+            neutral_total = len(df1[df1['Polarity']==0])/3
 
-                # Dropping records without mentions of any of the presidential aspirants
-                df1.drop(df1.loc[df1['presidential_aspirant']== 'None'].index, inplace=True)
+            # Selecting records from df1 with mentions of various presidential aspirants
+            df_ruto = df1 [df1 ['presidential_aspirant'] == 'Dr. William Samoei Ruto']
+            df_raila = df1 [df1 ['presidential_aspirant'] == 'Raila Amollo Odinga']
+            df_wajackoyah = df1 [df1 ['presidential_aspirant'] == 'Prof. George Luchiri Wajackoyah']
 
-                # Getting total number neutral sentiments in the dataframe
-                neutral_total = len(df1[df1['Polarity']==0])/3
+            # Dropping neutral records for the three presidnetial aspirants
+            df_ruto.drop((df_ruto[df_ruto['Polarity']==0]).index, inplace=True)
+            df_raila.drop((df_raila[df_raila['Polarity']==0]).index, inplace=True)
+            df_wajackoyah.drop((df_wajackoyah[df_wajackoyah['Polarity']==0]).index, inplace=True)
 
-                # Selecting records from df1 with mentions of various presidential aspirants
-                df_ruto = df1 [df1 ['presidential_aspirant'] == 'Dr. William Samoei Ruto']
-                df_raila = df1 [df1 ['presidential_aspirant'] == 'Raila Amollo Odinga']
-                df_wajackoyah = df1 [df1 ['presidential_aspirant'] == 'Prof. George Luchiri Wajackoyah']
+            # Getting the total number of records where the three presidential aspirants have been mentioned
+            records_raila = len(df_raila)
+            records_ruto = len(df_ruto)
+            records_wajackoyah = len(df_wajackoyah)
 
-                # Dropping neutral records for the three presidnetial aspirants
-                df_ruto.drop((df_ruto[df_ruto['Polarity']==0]).index, inplace=True)
-                df_raila.drop((df_raila[df_raila['Polarity']==0]).index, inplace=True)
-                df_wajackoyah.drop((df_wajackoyah[df_wajackoyah['Polarity']==0]).index, inplace=True)
+            # Total records with presidential mentions
+            total_records = records_raila + records_ruto + records_wajackoyah + neutral_total
 
-                # Getting the total number of records where the three presidential aspirants have been mentioned
-                records_raila = len(df_raila)
-                records_ruto = len(df_ruto)
-                records_wajackoyah = len(df_wajackoyah)
+            # Finding percentage negative and positive sentiments per presidential aspirnat
+            ruto_total_percent = pol_percent(df_ruto,records_ruto)
+            raila_total_percent = pol_percent(df_raila,records_raila)
+            wajackoyah_total_percent = pol_percent(df_wajackoyah,records_wajackoyah)
 
-                # Total records with presidential mentions
-                total_records = records_raila + records_ruto + records_wajackoyah + neutral_total
+            # Finding the favour of presidential aspirants an undecded voters in electorate
+            ruto_pos = (ruto_total_percent[1] + (raila_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_ruto/total_records )
+            raila_pos =(raila_total_percent[1] + (ruto_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_raila/total_records )
+            wajackoyah_pos = (wajackoyah_total_percent[1] + (ruto_total_percent[0] + raila_total_percent[0])/2) * (records_wajackoyah/total_records)
+            undecided_pos_percent = neutral_total/total_records * 100
 
-                # Finding percentage negative and positive sentiments per presidential aspirnat
-                ruto_total_percent = pol_percent(df_ruto,records_ruto)
-                raila_total_percent = pol_percent(df_raila,records_raila)
-                wajackoyah_total_percent = pol_percent(df_wajackoyah,records_wajackoyah)
+            # Lists of percentage polling of aspirants and undecided voters together with attached labels
+            counts = [ruto_pos, raila_pos, wajackoyah_pos, undecided_pos_percent]
+            names =  ['ruto\'s Favour' ,'raila\'s Favour','wajackoyah\'s Favour', 'Undecided Voters']
 
-                # Finding the favour of presidential aspirants an undecded voters in electorate
-                ruto_pos = (ruto_total_percent[1] + (raila_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_ruto/total_records )
-                raila_pos =(raila_total_percent[1] + (ruto_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_raila/total_records )
-                wajackoyah_pos = (wajackoyah_total_percent[1] + (ruto_total_percent[0] + raila_total_percent[0])/2) * (records_wajackoyah/total_records)
-                undecided_pos_percent = neutral_total/total_records * 100
+            # Source dataframe
+            source = pd.DataFrame({
+                'counts': counts,
+                'names': names
+                })
 
-                # Lists of percentage polling of aspirants and undecided voters together with attached labels
-                counts = [ruto_pos, raila_pos, wajackoyah_pos, undecided_pos_percent]
-                names =  ['ruto\'s Favour' ,'raila\'s Favour','wajackoyah\'s Favour', 'Undecided Voters']
+            # Sorting the counts in ascending order
+            source1 = source.sort_values(['counts'], ascending=[False])
 
-                # Source dataframe
-                source = pd.DataFrame({
-                    'counts': counts,
-                    'names': names
-                    })
-                
-                # Sorting the counts in ascending order
-                source1 = source.sort_values(['counts'], ascending=[False])
+            # Bar chart
+            bar_chart = alt.Chart(source1).mark_bar().encode(
+                y='counts',
+                x='names',
+                color = 'names'
+                )
 
-                # Bar chart
-                bar_chart = alt.Chart(source1).mark_bar().encode(
-                    y='counts',
-                    x='names',
-                    color = 'names'
-                    )
-                
-                # labels for bar chart
-                text = bar_chart.mark_text(
-                    align='left',
-                    baseline='middle',
-                    dx=3  # Nudges text to right so it doesn't appear on top of the bar
-                    ).encode(text='counts')
-                
-                # Plot
-                plt = (bar_chart + text).properties(height=600)
-                st.altair_chart(plt, use_container_width=True)
+            # labels for bar chart
+            text = bar_chart.mark_text(
+                align='left',
+                baseline='middle',
+                dx=3  # Nudges text to right so it doesn't appear on top of the bar
+                ).encode(text='counts')
 
-            if choice4 == 'Prediction without undecided voters':
+            # Plot
+            plt = (bar_chart + text).properties(height=600)
+            st.altair_chart(plt, use_container_width=True)
+
+
 
             
-                # Prediction without factoring in lack of undecided voters
-                st.subheader('Presidential prediction without factoring in undecided voters')
-                st.write("Here we try to predict  the presidential race assuming all the social media who had neutral sentiments did not participate in the forthcoming elections due to voter apathy")
-                
-                # Getting the total number of records where the three presidential aspirants have been mentioned
-                records_raila = len(df_raila)
-                records_ruto = len(df_ruto)
-                records_wajackoyah = len(df_wajackoyah)
-                
-                # Total without undecided voters
-                total = records_raila + records_ruto + records_wajackoyah 
+            # Prediction without factoring in lack of undecided voters
+            st.subheader('Presidential prediction without factoring in undecided voters')
+            st.write("Here we try to predict  the presidential race assuming all the social media who had neutral sentiments did not participate in the forthcoming elections due to voter apathy")
 
-                # Finding percentage negative and positive sentiments per presidential aspirnat
-                ruto_total_percent = pol_percent(df_ruto,records_ruto)
-                raila_total_percent = pol_percent(df_raila,records_raila)
-                wajackoyah_total_percent = pol_percent(df_wajackoyah,records_wajackoyah)
+            # Getting the total number of records where the three presidential aspirants have been mentioned
+            records_raila = len(df_raila)
+            records_ruto = len(df_ruto)
+            records_wajackoyah = len(df_wajackoyah)
 
-                # Finding the favour of presidential aspirants an undecded voters in electorate
-                ruto_pos = (ruto_total_percent[1] + (raila_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_ruto/total)
-                raila_pos =(raila_total_percent[1] + (ruto_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_raila/total)
-                wajackoyah_pos = (wajackoyah_total_percent[1] + (ruto_total_percent[0] + raila_total_percent[0])/2) * (records_wajackoyah/total)
+            # Total without undecided voters
+            total = records_raila + records_ruto + records_wajackoyah 
 
-                # Lists of percentage polling of aspirants and undecided voters together with attached labels
-                counts = [ruto_pos, raila_pos, wajackoyah_pos]
-                names =  ['ruto\'s Favour' ,'raila\'s Favour','wajackoyah\'s Favour']
+            # Finding percentage negative and positive sentiments per presidential aspirnat
+            ruto_total_percent = pol_percent(df_ruto,records_ruto)
+            raila_total_percent = pol_percent(df_raila,records_raila)
+            wajackoyah_total_percent = pol_percent(df_wajackoyah,records_wajackoyah)
 
-                # Source dataframe
-                source = pd.DataFrame({
-                    'counts': counts,
-                    'names': names
-                    })
-                
-                # Sorting the counts in ascending order
-                source1 = source.sort_values(['counts'], ascending=[False])
+            # Finding the favour of presidential aspirants an undecded voters in electorate
+            ruto_pos = (ruto_total_percent[1] + (raila_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_ruto/total)
+            raila_pos =(raila_total_percent[1] + (ruto_total_percent[0] + wajackoyah_total_percent[0])/2) * (records_raila/total)
+            wajackoyah_pos = (wajackoyah_total_percent[1] + (ruto_total_percent[0] + raila_total_percent[0])/2) * (records_wajackoyah/total)
 
-                # Bar chart
-                bar_chart = alt.Chart(source1).mark_bar().encode(
-                    y='counts',
-                    x='names',
-                    color = 'names',
-                    )
-                
-                # labels for bar chart
-                text = bar_chart.mark_text(
-                    align='left',
-                    baseline='middle',
-                    dx=3  # Nudges text to right so it doesn't appear on top of the bar
-                    ).encode(text='counts')
-                
-                # Plot
-                plt = (bar_chart + text).properties(height=600)
-                st.altair_chart(plt, use_container_width=True)
+            # Lists of percentage polling of aspirants and undecided voters together with attached labels
+            counts = [ruto_pos, raila_pos, wajackoyah_pos]
+            names =  ['ruto\'s Favour' ,'raila\'s Favour','wajackoyah\'s Favour']
+
+            # Source dataframe
+            source = pd.DataFrame({
+                'counts': counts,
+                'names': names
+                })
+
+            # Sorting the counts in ascending order
+            source1 = source.sort_values(['counts'], ascending=[False])
+
+            # Bar chart
+            bar_chart = alt.Chart(source1).mark_bar().encode(
+                y='counts',
+                x='names',
+                color = 'names',
+                )
+
+            # labels for bar chart
+            text = bar_chart.mark_text(
+                align='left',
+                baseline='middle',
+                dx=3  # Nudges text to right so it doesn't appear on top of the bar
+                ).encode(text='counts')
+
+            # Plot
+            plt = (bar_chart + text).properties(height=600)
+            st.altair_chart(plt, use_container_width=True)
 
 
         else:
