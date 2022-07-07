@@ -609,6 +609,11 @@ if navigation == "Presidential Election Prediction":
                 st.subheader('Presidential prediction without factoring in undecided voters')
                 st.write("Here we try to predict  the presidential race assuming all the social media who had neutral sentiments did not participate in the forthcoming elections due to voter apathy")
                 
+                # Getting the total number of records where the three presidential aspirants have been mentioned
+                records_raila = len(df_raila)
+                records_ruto = len(df_ruto)
+                records_wajackoyah = len(df_wajackoyah)
+                
                 # Total without undecided voters
                 total = records_raila + records_ruto + records_wajackoyah 
 
