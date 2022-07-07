@@ -86,10 +86,27 @@ st.title("The Indispensables 2022 Election Analysis")
 
 
 if navigation == "Home":
-    st.write("""
-    **_At indispensable, we care about Political current affairs in Kenya.
-        We Also provide you with updates on twitter popularity of the Presidential Candidates in the upcoming elections._** 
-    """)    
+    st.markdown("<h2 style='text-align: center; color: black;'>The Indispensables 2022 Election Analysis </h2>", unsafe_allow_html=True)
+    st.markdown("*****************")
+    st.subheader("About Elections")
+    
+    col1, col2 = st.columns(2)
+
+
+    with col1:
+        st.write("""
+        Elections are held in Kenya every fifth year on the second Tuesday in the month of August. The election cycle is upon us
+        and at indespensables we aim to keep you up to date with the latest trends, changing popularities of the various political 
+        coalitions and political figures as we head towards the election.
+        """)    
+
+        st.markdown("*****************")
+
+
+    with col2:
+         st.image("gettyimages-866631268-2048x2048.jpg")   
+    
+    
     
 if navigation == "Politics Today":
     st.write("""
